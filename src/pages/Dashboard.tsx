@@ -1,8 +1,7 @@
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
-  BarChart3,
   ChevronRight,
   DollarSign,
   PiggyBank,
@@ -25,31 +24,61 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const Dashboard: FC = () => {
-  const { user: userDetails, isLoadingUser, retry } = useAuth();
-
-  // Modal states
+  const { user: userDetails, isLoadingUser, retry } = useAuth();  // Add token to destructuring
+  
+  // Move all useState hooks to the top
+  const [accountData, setAccountData] = useState<any>(null);
+  const [isLoadingAccount, setIsLoadingAccount] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
-  const [accountType, setAccountType] = useState<"bank" | "mobile" | null>(
-    null
-  );
+  const [accountType, setAccountType] = useState<"bank" | "mobile" | null>(null);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState("");
-
-  // Form states
   const [bankForm, setBankForm] = useState({
     accountNumber: "",
     accountName: "",
     phoneNumber: "",
   });
-
   const [mobileForm, setMobileForm] = useState({
     name: "",
     phoneNumber: "",
   });
+  const [chartView, setChartView] = useState<'weekly' | 'monthly'>('monthly');
 
-  if (isLoadingUser) {
+  // useEffect hook
+  useEffect(() => {
+    const fetchAccountData = async () => {
+      if (!userDetails?.id) return;
+      
+      setIsLoadingAccount(true);
+      try {
+        const response = await fetch(
+          `https://cashflow-backend-yko9.onrender.com/api/users/${userDetails.id}/connect-account`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+        const data = await response.json();
+        setAccountData(data);
+      } catch (error) {
+        console.error('Failed to fetch account data:', error);
+        toast.error('Failed to load account data');
+      } finally {
+        setIsLoadingAccount(false);
+      }
+    };
+
+    fetchAccountData();
+  }, [userDetails?.id]); // Add token to dependency array
+
+  // Update loading check to include account loading
+  if (isLoadingUser || isLoadingAccount) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center h-full min-h-96 py-20">
@@ -58,6 +87,35 @@ const Dashboard: FC = () => {
       </DashboardLayout>
     );
   }
+
+  // Update accountBalances to use backend data for amounts
+  const accountBalances = [
+    { name: "Total Amount", balance: accountData?.total_amount || 0, change: 2.3, type: "up" },
+    { name: "Amount Remaining", balance: accountData?.amount_remaining || 0, change: 4.7, type: "up" },
+    { name: "Amount Debited", balance: accountData?.amount_debited || 0, change: 12.5, type: "down" },
+    { name: "AI Investment", balance: accountData?.ai_investment || 0, change: -1.2, type: "down" },
+  ];
+
+  // Add spending data
+  const spendingData = {
+    weekly: [
+      { period: 'Mon', amount: 120 },
+      { period: 'Tue', amount: 180 },
+      { period: 'Wed', amount: 150 },
+      { period: 'Thu', amount: 220 },
+      { period: 'Fri', amount: 350 },
+      { period: 'Sat', amount: 280 },
+      { period: 'Sun', amount: 200 },
+    ],
+    monthly: [
+      { period: 'Jan', amount: 1200 },
+      { period: 'Feb', amount: 900 },
+      { period: 'Mar', amount: 1500 },
+      { period: 'Apr', amount: 1100 },
+      { period: 'May', amount: 1800 },
+      { period: 'Jun', amount: 1300 },
+    ]
+  };
 
   // Handle account type selection
   const handleAccountTypeSelect = (type: "bank" | "mobile") => {
@@ -128,21 +186,6 @@ const Dashboard: FC = () => {
   };
 
   // Dummy data for dashboard
-  const accountBalances = [
-    { name: "Total Amount", balance: 5240.12, change: 2.3, type: "up" },
-    { name: "Amount Remaining", balance: 12750.88, change: 4.7, type: "up" },
-    { name: "Amount Debited", balance: -1850.44, change: 12.5, type: "down" },
-    { name: "AI Investment", balance: 34215.5, change: -1.2, type: "down" },
-  ];
-
-  // const recentTransactions = [
-  //   { name: "Grocery Store", amount: -123.45, category: "Food & Dining", date: "Today" },
-  //   { name: "Salary Deposit", amount: 3200.00, category: "Income", date: "Yesterday" },
-  //   { name: "Electric Bill", amount: -94.20, category: "Utilities", date: "May 15, 2023" },
-  //   { name: "Netflix Subscription", amount: -17.99, category: "Entertainment", date: "May 14, 2023" },
-  //   { name: "Gas Station", amount: -45.30, category: "Transportation", date: "May 12, 2023" },
-  // ];
-
   const insights = [
     {
       title: "Spending Reduced",
@@ -218,7 +261,7 @@ const Dashboard: FC = () => {
                   </div>
                   <div className="text-2xl font-bold">
                     $
-                    {Math.abs(account.balance).toLocaleString("en-US", {
+                    {Math.abs(account?.balance).toLocaleString("en-US", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -280,25 +323,35 @@ const Dashboard: FC = () => {
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-semibold">Spending Analysis</h2>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant={chartView === 'weekly' ? 'default' : 'outline'} 
+                        size="sm"
+                        onClick={() => setChartView('weekly')}
+                        className={chartView === 'weekly' ? 'bg-finance-blue text-white hover:bg-finance-blue/90' : ''}
+                      >
                         Weekly
                       </Button>
                       <Button
+                        variant={chartView === 'monthly' ? 'default' : 'outline'}
                         size="sm"
-                        className="bg-finance-blue text-white hover:bg-finance-blue/90"
+                        onClick={() => setChartView('monthly')}
+                        className={chartView === 'monthly' ? 'bg-finance-blue text-white hover:bg-finance-blue/90' : ''}
                       >
                         Monthly
                       </Button>
                     </div>
                   </div>
 
-                  <div className="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-                    <div className="text-center text-gray-500 flex flex-col items-center">
-                      <BarChart3 size={36} className="mb-2 text-gray-400" />
-                      <span>
-                        Spending chart visualization would appear here
-                      </span>
-                    </div>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={spendingData[chartView]}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="period" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="amount" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mt-6">
