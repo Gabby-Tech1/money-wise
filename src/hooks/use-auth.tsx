@@ -22,8 +22,9 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem("token");
+    sessionStorage.removeItem("isconnected");
+    setUser(null);
   };
 
   const fetchUserDetails = async () => {
@@ -48,8 +49,12 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
-      setUser(data);
-      console.log("User details:", data);
+      // Set isconnected to true in sessionStorage
+
+      const isConnected = sessionStorage.getItem("isconnected") === "true";
+
+      setUser({ ...data, isconnected: isConnected });
+      console.log("User details:", { ...data, isconnected: isConnected });
     } catch (error) {
       console.error("Error fetching user details:", error);
       toast.error("Failed to load user details");
@@ -62,17 +67,17 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
     fetchUserDetails();
   }, []);
 
-  // development mode only - let's reset the userdetails with isconnected to true
-  // correct immplementations simply recalls the fetchUserDetails function
   const retry = async () => {
+    sessionStorage.setItem("isconnected", "true");
     setIsLoadingUser(true);
-    // fake 1s delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (user) {
-      setUser({ ...user, isconnected: true });
+    try {
+      await fetchUserDetails();
+    } catch (error) {
+      console.error("Retry fetching user details failed:", error);
+      toast.error("Retry fetching user details failed");
+    } finally {
+      setIsLoadingUser(false);
     }
-    setIsLoadingUser(false);
   };
 
   const value = { user, logout, isLoadingUser, retry };
