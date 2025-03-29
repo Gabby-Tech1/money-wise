@@ -7,6 +7,7 @@ import {
   ChevronRight,
   // DollarSign,
   Filter,
+  Loader,
   // PieChart,
   // TrendingUp,
 } from "lucide-react";
@@ -41,8 +42,10 @@ import {
 } from "recharts";
 import { TransactionsModal } from "@/components/TransactionsModal";
 import { ReportModal } from "@/components/ReportModal";
+import { useAuth } from "@/hooks/use-auth";
 
 const DashboardInsights: FC = () => {
+  const { user, isLoadingUser } = useAuth();
   const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -155,6 +158,27 @@ const DashboardInsights: FC = () => {
       label: "Spending",
     },
   };
+
+  if (isLoadingUser) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full min-h-96 py-20">
+          <Loader className="animate-spin h-10 w-10 text-gray-500" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user?.isconnected) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full min-h-96 py-20">
+          <p className="text-gray-500">Please connect your account to view insights.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
 
   return (
     <DashboardLayout>
