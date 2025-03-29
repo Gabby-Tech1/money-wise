@@ -1,34 +1,171 @@
-
-import { FC } from "react";
+import { FC, useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowUpRight,
   BarChart3,
   ChevronRight,
   DollarSign,
   PiggyBank,
   TrendingDown,
   TrendingUp,
-  Wallet,
+  Building2 as Bank,  // Change Bank to Building2
+  Phone,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { toast } from "sonner";
+
+interface UserDetails {
+  first_name: string;
+  email: string;
+  id: string;
+}
 
 const Dashboard: FC = () => {
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [_, setIsLoadingUser] = useState(true);
+  
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found');
+        }
+
+        const response = await fetch('https://cashflow-backend-yko9.onrender.com/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user details');
+        }
+
+        const data = await response.json();
+        setUserDetails(data);
+        console.log('User details:', data);
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+        toast.error('Failed to load user details');
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  
+ 
+  // Modal states
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [accountType, setAccountType] = useState<"bank" | "mobile" | null>(null);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  
+  // Form states
+  const [bankForm, setBankForm] = useState({
+    accountNumber: "",
+    accountName: "",
+    phoneNumber: ""
+  });
+  
+  const [mobileForm, setMobileForm] = useState({
+    name: "",
+    phoneNumber: ""
+  });
+  
+  // Handle account type selection
+  const handleAccountTypeSelect = (type: "bank" | "mobile") => {
+    setAccountType(type);
+  };
+  
+  // Handle form submission
+  const handleSubmitAccountForm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowAccountModal(false);
+    setShowOtpModal(true);
+  };
+  
+  // Handle OTP verification with enhanced feedback
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Show loading state (optional)
+    const accountTypeLabel = accountType === "bank" ? "bank" : "mobile money";
+    
+    // Close the modal
+    setShowOtpModal(false);
+    
+    // Show success toast with enhanced message - remove variant that might be causing issues
+    toast.success(`Your ${accountTypeLabel} account has been successfully connected!`);
+    
+    // Reset states
+    setAccountType(null);
+    setOtpCode("");
+    setBankForm({
+      accountNumber: "",
+      accountName: "",
+      phoneNumber: ""
+    });
+    setMobileForm({
+      name: "",
+      phoneNumber: ""
+    });
+  };
+  
+  // Add function to handle OTP input to allow only numbers
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow numeric input
+    if (/^\d*$/.test(value) && value.length <= 6) {
+      setOtpCode(value);
+    }
+  };
+
+  // Handle bank form change
+  const handleBankFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBankForm({
+      ...bankForm,
+      [e.target.name]: e.target.value
+    });
+  };
+  
+  // Handle mobile form change
+  const handleMobileFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMobileForm({
+      ...mobileForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
   // Dummy data for dashboard
   const accountBalances = [
-    { name: "Checking Account", balance: 5240.12, change: 2.3, type: "up" },
-    { name: "Savings Account", balance: 12750.88, change: 4.7, type: "up" },
-    { name: "Investment Portfolio", balance: 34215.50, change: -1.2, type: "down" },
-    { name: "Credit Card", balance: -1850.44, change: 12.5, type: "down" },
+    { name: "Total Amount", balance: 5240.12, change: 2.3, type: "up" },
+    { name: "Amount Remaining", balance: 12750.88, change: 4.7, type: "up" },
+    { name: "Amount Debited", balance: -1850.44, change: 12.5, type: "down" },
+    { name: "AI Investment", balance: 34215.50, change: -1.2, type: "down" },
   ];
 
-  const recentTransactions = [
-    { name: "Grocery Store", amount: -123.45, category: "Food & Dining", date: "Today" },
-    { name: "Salary Deposit", amount: 3200.00, category: "Income", date: "Yesterday" },
-    { name: "Electric Bill", amount: -94.20, category: "Utilities", date: "May 15, 2023" },
-    { name: "Netflix Subscription", amount: -17.99, category: "Entertainment", date: "May 14, 2023" },
-    { name: "Gas Station", amount: -45.30, category: "Transportation", date: "May 12, 2023" },
-  ];
+  // const recentTransactions = [
+  //   { name: "Grocery Store", amount: -123.45, category: "Food & Dining", date: "Today" },
+  //   { name: "Salary Deposit", amount: 3200.00, category: "Income", date: "Yesterday" },
+  //   { name: "Electric Bill", amount: -94.20, category: "Utilities", date: "May 15, 2023" },
+  //   { name: "Netflix Subscription", amount: -17.99, category: "Entertainment", date: "May 14, 2023" },
+  //   { name: "Gas Station", amount: -45.30, category: "Transportation", date: "May 12, 2023" },
+  // ];
 
   const insights = [
     {
@@ -53,15 +190,21 @@ const Dashboard: FC = () => {
 
   return (
     <DashboardLayout>
+      {/* Remove duplicate Toaster since it's already in DashboardLayout */}
       <div className="space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Financial Overview</h1>
-            <p className="text-gray-600">Welcome back, John! Here's your financial summary.</p>
+              <p className="text-gray-600">
+                Welcome back, {userDetails?.first_name}! Here's your financial summary.
+              </p>
           </div>
           <div className="hidden md:block">
-            <Button className="bg-finance-gradient hover:bg-finance-blue">
+            <Button 
+              className="bg-finance-gradient hover:bg-finance-blue"
+              onClick={() => setShowAccountModal(true)}
+            >
               <PiggyBank size={18} className="mr-2" />
               Add Account
             </Button>
@@ -102,6 +245,182 @@ const Dashboard: FC = () => {
           ))}
         </div>
 
+        {/* Account Selection Modal */}
+        <Dialog open={showAccountModal} onOpenChange={setShowAccountModal}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Add New Financial Account</DialogTitle>
+              <DialogDescription>
+                Choose an account type to connect to your dashboard.
+              </DialogDescription>
+            </DialogHeader>
+            
+            {!accountType ? (
+              <div className="grid grid-cols-2 gap-4 py-4">
+                <Card 
+                  className={`p-4 cursor-pointer hover:border-finance-blue transition-colors`}
+                  onClick={() => handleAccountTypeSelect("bank")}
+                >
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className="p-3 rounded-full bg-finance-blue/10 text-finance-blue">
+                      <Bank size={24} />
+                    </div>
+                    <h3 className="font-semibold">Bank Account</h3>
+                    <p className="text-sm text-gray-500">Connect your traditional bank account</p>
+                  </div>
+                </Card>
+                
+                <Card 
+                  className={`p-4 cursor-pointer hover:border-finance-blue transition-colors`}
+                  onClick={() => handleAccountTypeSelect("mobile")}
+                >
+                  <div className="flex flex-col items-center text-center gap-2">
+                    <div className="p-3 rounded-full bg-finance-teal/10 text-finance-teal">
+                      <Phone size={24} />
+                    </div>
+                    <h3 className="font-semibold">Mobile Money</h3>
+                    <p className="text-sm text-gray-500">Connect your mobile money account</p>
+                  </div>
+                </Card>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmitAccountForm} className="space-y-4 py-4">
+                {accountType === "bank" ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="accountNumber">Account Number</Label>
+                      <Input 
+                        id="accountNumber" 
+                        name="accountNumber"
+                        value={bankForm.accountNumber}
+                        onChange={handleBankFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="accountName">Account Name</Label>
+                      <Input 
+                        id="accountName" 
+                        name="accountName"
+                        value={bankForm.accountName}
+                        onChange={handleBankFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Registered Phone Number</Label>
+                      <Input 
+                        id="phoneNumber" 
+                        name="phoneNumber"
+                        value={bankForm.phoneNumber}
+                        onChange={handleBankFormChange}
+                        required
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input 
+                        id="name" 
+                        name="name"
+                        value={mobileForm.name}
+                        onChange={handleMobileFormChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber">Phone Number</Label>
+                      <Input 
+                        id="phoneNumber" 
+                        name="phoneNumber"
+                        value={mobileForm.phoneNumber}
+                        onChange={handleMobileFormChange}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+                <DialogFooter className="flex justify-between items-center pt-4">
+                  <Button 
+                    variant="outline" 
+                    type="button" 
+                    onClick={() => setAccountType(null)}
+                  >
+                    Back
+                  </Button>
+                  <Button 
+                    type="submit"
+                    className="bg-finance-blue hover:bg-finance-blue/90"
+                  >
+                    Continue
+                  </Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* OTP Verification Modal */}
+        <Dialog open={showOtpModal} onOpenChange={(open) => {
+          // If user tries to close modal manually, warn them the process will be canceled
+          if (!open) {
+            const confirmClose = window.confirm("Are you sure you want to cancel adding your account?");
+            if (confirmClose) {
+              setShowOtpModal(false);
+              setAccountType(null);
+              setOtpCode("");
+            }
+          } else {
+            setShowOtpModal(open);
+          }
+        }}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Verify Your Account</DialogTitle>
+              <DialogDescription>
+                We've sent a verification code to your {accountType === "bank" ? "registered phone number" : "mobile number"}. 
+                Enter it below to complete the process.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <form onSubmit={handleVerifyOtp} className="space-y-6 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="otp">OTP Code</Label>
+                <Input 
+                  id="otp" 
+                  value={otpCode}
+                  onChange={handleOtpChange}
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="\d{6}"
+                  maxLength={6}
+                  placeholder="Enter 6-digit code"
+                  className="text-center text-xl tracking-widest"
+                  required
+                  autoFocus
+                />
+                <p className="text-xs text-gray-500">Enter the 6-digit code sent to your device</p>
+              </div>
+              
+              <DialogFooter>
+                <Button 
+                  type="submit"
+                  className="w-full bg-finance-blue hover:bg-finance-blue/90"
+                  disabled={otpCode.length !== 6}
+                >
+                  Verify & Connect
+                </Button>
+              </DialogFooter>
+              
+              <div className="text-sm text-center text-gray-500">
+                Didn't receive a code? <Button variant="link" className="p-0 h-auto" type="button">Resend</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
         {/* Main Grid - Insights and Transactions */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AI Insights */}
@@ -130,43 +449,6 @@ const Dashboard: FC = () => {
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            {/* Monthly Budget */}
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold">Monthly Budget</h2>
-                <Button variant="ghost" size="sm" className="text-finance-blue hover:text-finance-blue/80">
-                  Manage
-                  <ChevronRight size={16} className="ml-1" />
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {[
-                  { category: "Food & Dining", current: 430, budget: 600, color: "bg-finance-blue" },
-                  { category: "Entertainment", current: 120, budget: 200, color: "bg-finance-purple" },
-                  { category: "Transportation", current: 250, budget: 300, color: "bg-finance-teal" },
-                ].map((item, index) => {
-                  const percentage = Math.min(100, Math.round((item.current / item.budget) * 100));
-                  return (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">{item.category}</span>
-                        <span className="text-sm text-gray-600">
-                          ${item.current} <span className="text-gray-400">/ ${item.budget}</span>
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${item.color} rounded-full`}
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </div>
           </div>
@@ -206,62 +488,6 @@ const Dashboard: FC = () => {
                     ></div>
                     <div className="font-medium">${item.amount}</div>
                     <div className="text-xs text-gray-500">{item.category}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Transactions */}
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold">Recent Transactions</h2>
-                <Button variant="ghost" size="sm" className="text-finance-blue hover:text-finance-blue/80">
-                  View All
-                  <ChevronRight size={16} className="ml-1" />
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {recentTransactions.map((transaction, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`p-2 rounded-full ${
-                          transaction.amount > 0 ? "bg-green-100" : "bg-gray-100"
-                        }`}
-                      >
-                        {transaction.amount > 0 ? (
-                          <ArrowUpRight
-                            size={20}
-                            className="text-finance-success"
-                          />
-                        ) : (
-                          <Wallet size={20} className="text-gray-500" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-medium">{transaction.name}</div>
-                        <div className="text-xs text-gray-500">
-                          {transaction.category} • {transaction.date}
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      className={`font-medium ${
-                        transaction.amount > 0
-                          ? "text-finance-success"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {transaction.amount > 0 ? "+" : ""}$
-                      {Math.abs(transaction.amount).toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </div>
                   </div>
                 ))}
               </div>

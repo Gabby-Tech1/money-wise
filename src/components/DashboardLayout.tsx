@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Settings2,
+  MessageSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,12 +42,15 @@ interface DashboardLayoutProps {
 const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const userEmail = localStorage.getItem('user_email') || 'User';
+  const userInitials = userEmail.charAt(0).toUpperCase();
 
   const navItems = [
     { icon: Home, name: "Overview", path: "/dashboard" },
     { icon: BarChart3, name: "Insights", path: "/dashboard/insights" },
     { icon: Wallet, name: "Investments", path: "/dashboard/investments" },
     { icon: RefreshCcw, name: "Automation", path: "/dashboard/automation" },
+    { icon: MessageSquare, name: "Financial Advisor", path: "/dashboard/advisor" },
     { icon: Bell, name: "Notification", path: "/dashboard/notifications" },
     { icon: Settings, name: "Settings", path: "/dashboard/settings" },
     // { icon: HelpCircle, name: "Help", path: "/dashboard/help" },
@@ -91,16 +95,46 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
     );
   };
 
+  // Function to close sidebar (useful for mobile navigation)
+  const closeSidebar = () => {
+    setSidebarOpen(false);
+  };
+
+  const handleLogout = () => {
+    // Clear all local storage data
+    localStorage.clear();
+  };
+
   return (
-    <div className="flex h-screen">
-      {/* Sidebar - fixed position and full height */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 overflow-y-auto z-30">
+    <div className="flex h-screen bg-gray-50">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+          onClick={closeSidebar}
+        ></div>
+      )}
+
+      {/* Sidebar - responsive */}
+      <div 
+        className={`fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 overflow-y-auto z-30 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div className="flex flex-col h-full p-4">
-          <div className="flex items-center gap-2 px-2 py-4">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-finance-gradient">
-              <span className="text-white font-bold text-xl">M</span>
+          <div className="flex items-center justify-between px-2 py-4">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-finance-gradient">
+                <span className="text-white font-bold text-xl">M</span>
+              </div>
+              <span className="font-bold text-xl finance-gradient-text">MoneyWise</span>
             </div>
-            <span className="font-bold text-xl finance-gradient-text">MoneyWise</span>
+            <button 
+              onClick={closeSidebar} 
+              className="p-1 rounded-full hover:bg-gray-100 lg:hidden"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <nav className="mt-8 flex-1">
@@ -116,6 +150,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
                           ? "bg-finance-gradient text-white"
                           : "text-gray-700 hover:bg-gray-100"
                       }`}
+                      onClick={closeSidebar}
                     >
                       <item.icon size={20} />
                       <span>{item.name}</span>
@@ -127,7 +162,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
           </nav>
 
           <div className="mt-auto pt-4 border-t">
-            <Link to="/login">
+            <Link to="/logout" onClick={handleLogout}>
               <Button
                 variant="ghost"
                 className="w-full justify-start text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900"
@@ -140,19 +175,29 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Main content - add left margin to account for fixed sidebar */}
-      <div className="flex-1 ml-64">
-        {/* Top navigation - fixed */}
-        <header className="fixed top-0 right-0 left-64 bg-white border-b z-20">
+      {/* Main content - responsive margin */}
+      <div className="flex-1 lg:ml-64">
+        {/* Top navigation - responsive */}
+        <header className="fixed top-0 right-0 left-0 lg:left-64 bg-white border-b z-20 shadow-sm">
           <div className="flex items-center justify-between px-4 h-16">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-gray-700"
-            >
-              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="lg:hidden text-gray-700 p-2 rounded-md hover:bg-gray-100 mr-2"
+                aria-label="Toggle menu"
+              >
+                <Menu size={24} />
+              </button>
 
-            <div className="flex-1 max-w-md ml-4 lg:ml-0">
+              <div className="lg:hidden flex items-center gap-2">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-finance-gradient">
+                  <span className="text-white font-bold text-lg">M</span>
+                </div>
+                <span className="font-bold text-lg finance-gradient-text">MoneyWise</span>
+              </div>
+            </div>
+
+            <div className="hidden md:block flex-1 max-w-md ml-4">
               <div className="relative">
                 <Search
                   size={20}
@@ -166,7 +211,11 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <button className="md:hidden text-gray-700 p-2 rounded-md hover:bg-gray-100">
+                <Search size={20} />
+              </button>
+              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="relative text-gray-700 p-1 rounded-full hover:bg-gray-100">
@@ -217,20 +266,20 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="flex items-center gap-2 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">
-                    <div className="w-9 h-9 rounded-full bg-finance-gradient flex items-center justify-center text-white font-medium">
-                      JD
+                    <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-finance-gradient flex items-center justify-center text-white font-medium">
+                      {userInitials}
                     </div>
-                    <span className="hidden md:inline-block font-medium">John Doe</span>
+                    <span className="hidden md:inline-block font-medium">{userEmail}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="flex items-center gap-2 p-2">
                     <div className="w-10 h-10 rounded-full bg-finance-gradient flex items-center justify-center text-white font-medium">
-                      JD
+                      {userInitials}
                     </div>
                     <div>
-                      <p className="font-medium">John Doe</p>
-                      <p className="text-xs text-gray-500">john.doe@example.com</p>
+                      <p className="font-medium">{userEmail}</p>
+                      <p className="text-xs text-gray-500">Logged in</p>
                     </div>
                   </div>
                   <DropdownMenuSeparator />
@@ -248,7 +297,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/logout" className="flex items-center cursor-pointer text-finance-danger">
+                    <Link to="/logout" onClick={handleLogout} className="flex items-center cursor-pointer text-finance-danger">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Logout</span>
                     </Link>
@@ -259,9 +308,9 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
           </div>
         </header>
         
-        {/* Main content with padding to account for fixed header */}
+        {/* Main content with responsive padding */}
         <div className="pt-16">
-          <main className="p-6">
+          <main className="p-3 sm:p-4 md:p-6">
             {children}
           </main>
         </div>

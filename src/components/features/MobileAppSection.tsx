@@ -1,24 +1,18 @@
 
 import { FC } from "react";
 import { Button } from "@/components/ui/button";
-import { Smartphone } from "lucide-react";
+// import { Smartphone } from "lucide-react";
+import Mobile from "@/assets/mobile.png";
 
 const MobileAppSection: FC = () => {
   return (
     <div className="py-20">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div className="order-2 lg:order-1">
-          <div className="bg-gray-100 rounded-xl overflow-hidden">
+          {/* <div className="bg-gray-100 rounded-xl overflow-hidden"> */}
             {/* This would be replaced with an actual device mockup */}
-            <div className="aspect-[3/5] bg-gradient-to-br from-finance-blue/20 to-finance-purple/20 flex items-center justify-center">
-              <div className="text-center p-6">
-                <Smartphone className="h-16 w-16 text-finance-purple mx-auto mb-4" />
-                <p className="text-gray-700 font-medium">
-                  Mobile App Interface
-                </p>
-              </div>
-            </div>
-          </div>
+            <img src={Mobile} alt="" />
+          {/* </div> */}
         </div>
         <div className="order-1 lg:order-2">
           <h2 className="text-3xl font-bold mb-6">
@@ -56,6 +50,7 @@ const MobileAppSection: FC = () => {
               </li>
             ))}
           </ul>
+          <p className="py-2 text-lg">Will soon be available on: </p>
           <div className="flex flex-wrap gap-4">
             <Button className="bg-black text-white hover:bg-gray-800">
               <svg

@@ -16,7 +16,7 @@ const CTASection: FC = () => {
         <Button className="bg-white text-finance-blue hover:bg-gray-100">
           Create Free Account
         </Button>
-        <Button variant="outline" className="border-white text-white hover:bg-white/10">
+        <Button variant="outline" className="border-white text-finance-blue hover:bg-white/10">
           <MessageSquare className="mr-2 h-5 w-5" />
           Talk to an Advisor
         </Button>

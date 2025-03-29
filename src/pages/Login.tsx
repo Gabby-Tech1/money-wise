@@ -1,9 +1,9 @@
-
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, ArrowLeft, Github, Mail } from "lucide-react";
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,23 +11,42 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Simple validation
-      if (email && password) {
+    try {
+      const response = await axios.post('https://cashflow-backend-yko9.onrender.com/api/auth/login', {
+        email,
+        password
+      });
+
+      if (response.data.access_token) {
+        // Store auth data
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('token_type', response.data.token_type);
+        localStorage.setItem('user_email', email); // Store email for now
+
         toast.success("Login successful!");
-        navigate("/dashboard");
+        
+        // Redirect to the originally attempted URL or dashboard
+        const origin = (location.state as any)?.from?.pathname || '/dashboard';
+        navigate(origin);
       } else {
-        toast.error("Please enter valid credentials");
+        toast.error("Invalid response from server");
       }
-    }, 1500);
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.error || 
+                          error.message || 
+                          "Invalid credentials";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

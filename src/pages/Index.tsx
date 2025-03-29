@@ -15,8 +15,8 @@ import {
   Lock,
   PiggyBank,
   Shield,
-  Smartphone,
 } from "lucide-react";
+import Mobile from '@/assets/mobile.png'
 
 const Index: FC = () => {
   return (
@@ -237,14 +237,15 @@ const Index: FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
               <div className="flex justify-center">
-                <div className="relative">
+                {/* <div className="relative">
                   <div className="w-64 h-[500px] bg-black rounded-[40px] p-4">
                     <div className="w-full h-full bg-gray-800 rounded-[32px] flex items-center justify-center">
                       <Smartphone className="h-16 w-16 text-white opacity-25" />
                     </div>
                   </div>
                   <div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-32 h-5 bg-black rounded-b-xl z-10"></div>
-                </div>
+                </div> */}
+                <img src={Mobile} alt="" className="w-[300px]" />
               </div>
             </div>
             <div className="order-1 lg:order-2">
@@ -315,7 +316,7 @@ const Index: FC = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/signup">
-              <Button className="bg-white text-finance-blue hover:bg-gray-300 text-lg py-2 px-6 h-auto rounded-md">
+              <Button className="bg-wxt-finance-blue hover:bg-gray-300 text-lg py-2 px-6 h-auto rounded-md">
                 Get Started — It's Free
               </Button>
             </Link>

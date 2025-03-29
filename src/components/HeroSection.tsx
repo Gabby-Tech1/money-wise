@@ -3,6 +3,7 @@ import { FC } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import Image from "@/assets/bot.avif"
 
 interface HeroSectionProps {
   title: string;
@@ -22,7 +23,6 @@ const HeroSection: FC<HeroSectionProps> = ({
   ctaLink = "/signup",
   secondaryCtaText,
   secondaryCtaLink,
-  image,
   features,
 }) => {
   return (
@@ -70,19 +70,19 @@ const HeroSection: FC<HeroSectionProps> = ({
           </div>
 
           <div className="flex justify-center lg:justify-end">
-            {image ? (
-              <img
-                src={image}
-                alt="Hero illustration"
-                className="max-w-full h-auto rounded-lg shadow-lg animate-fade-in"
-              />
+            <img
+              src={Image}
+              alt="Hero illustration"
+              className="max-w-full h-auto rounded-lg shadow-lg animate-fade-in"
+            />
+            {/* {image ? (
             ) : (
               <div className="w-full max-w-lg aspect-square bg-white p-6 rounded-lg shadow-lg glass-card animate-fade-in">
                 <div className="h-full w-full bg-gray-100 rounded flex items-center justify-center">
                   <span className="text-xl text-gray-400">Image placeholder</span>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

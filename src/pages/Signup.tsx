@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2, ArrowLeft, Check } from "lucide-react";
+import axios from "axios";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const Signup = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!agreedToTerms) {
@@ -32,18 +32,24 @@ const Signup = () => {
     
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Simple validation
-      if (formData.email && formData.password && formData.firstName) {
+    try {
+      const response = await axios.post('https://cashflow-backend-yko9.onrender.com/api/auth/signup', {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (response.data) {
         toast.success("Account created successfully!");
-        navigate("/dashboard");
-      } else {
-        toast.error("Please fill out all required fields");
+        navigate("/login");
       }
-    }, 1500);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "An error occurred during signup";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
