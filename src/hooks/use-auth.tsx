@@ -49,7 +49,6 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const data = await response.json();
-      // Set isconnected to true in sessionStorage
 
       const isConnected = sessionStorage.getItem("isconnected") === "true";
 
