@@ -10,6 +10,7 @@ import {
   TrendingUp,
   Building2 as Bank,  // Change Bank to Building2
   Phone,
+  Loader,
 } from "lucide-react";
 import {
   Dialog,
@@ -28,11 +29,12 @@ interface UserDetails {
   first_name: string;
   email: string;
   id: string;
+  isconnected?: boolean;
 }
 
 const Dashboard: FC = () => {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [_, setIsLoadingUser] = useState(true);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -86,6 +88,29 @@ const Dashboard: FC = () => {
     name: "",
     phoneNumber: ""
   });
+
+  if (isLoadingUser) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full min-h-96 py-20">
+          <Loader className="animate-spin h-10 w-10 text-gray-500" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  
+  if (!userDetails?.isconnected) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center h-full py-20 space-y-4">
+          <p className="text-2xl font-bold">No Account Linked</p>
+          <p className="text-gray-600">Connect one or more wallets to view your dashboard.</p>
+          <Button onClick={() => setShowAccountModal(true)}>Link Account</Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
   
   // Handle account type selection
   const handleAccountTypeSelect = (type: "bank" | "mobile") => {

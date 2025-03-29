@@ -8,4 +8,5 @@ export interface UserDetails {
   created_at?: string;
   updated_at?: string;
   avatar_url?: string;
+  isconnected?: boolean;
 }
