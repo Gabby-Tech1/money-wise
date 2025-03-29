@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
 
 // Add interface for notification type
 interface Notification {
@@ -40,10 +41,12 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
+  const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const userEmail = localStorage.getItem('user_email') || 'User';
-  const userInitials = userEmail.charAt(0).toUpperCase();
+  // const userEmail = user?.email || 'User';
+  const userInitials = user?.first_name?.charAt(0).toUpperCase() || 'U';
+  const userFullname = `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || 'User';
 
   const navItems = [
     { icon: Home, name: "Overview", path: "/dashboard" },
@@ -101,8 +104,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   const handleLogout = () => {
-    // Clear all local storage data
-    localStorage.clear();
+    logout();
   };
 
   return (
@@ -162,15 +164,14 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
           </nav>
 
           <div className="mt-auto pt-4 border-t">
-            <Link to="/logout" onClick={handleLogout}>
-              <Button
+            <Button
                 variant="ghost"
                 className="w-full justify-start text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900"
+                onClick={handleLogout}
               >
                 <LogOut size={20} className="mr-3" />
                 Logout
               </Button>
-            </Link>
           </div>
         </div>
       </div>
@@ -269,7 +270,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
                     <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-finance-gradient flex items-center justify-center text-white font-medium">
                       {userInitials}
                     </div>
-                    <span className="hidden md:inline-block font-medium">{userEmail}</span>
+                    <span className="hidden md:inline-block font-medium">{userFullname}</span>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
@@ -278,7 +279,7 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
                       {userInitials}
                     </div>
                     <div>
-                      <p className="font-medium">{userEmail}</p>
+                      <p className="font-medium">{userFullname}</p>
                       <p className="text-xs text-gray-500">Logged in</p>
                     </div>
                   </div>
