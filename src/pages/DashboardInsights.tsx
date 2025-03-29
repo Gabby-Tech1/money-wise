@@ -7,6 +7,7 @@ import {
   ChevronRight,
   // DollarSign,
   Filter,
+  Loader,
   // PieChart,
   // TrendingUp,
 } from "lucide-react";
@@ -19,12 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
   Table,
@@ -36,11 +32,20 @@ import {
 } from "@/components/ui/table";
 
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { TransactionsModal } from "@/components/TransactionsModal";
 import { ReportModal } from "@/components/ReportModal";
+import { useAuth } from "@/hooks/use-auth";
 
 const DashboardInsights: FC = () => {
+  const { user, isLoadingUser } = useAuth();
   const [isTransactionsModalOpen, setIsTransactionsModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
@@ -74,11 +79,11 @@ const DashboardInsights: FC = () => {
   const recentTransactions: Transaction[] = [
     {
       id: 1,
-      merchant: "Mobile Money",  // Updated to match literal type
+      merchant: "Mobile Money", // Updated to match literal type
       category: "Transfer",
       date: "2024-01-20",
       amount: 500,
-      time: "14:30"
+      time: "14:30",
     },
     {
       id: 2,
@@ -86,7 +91,7 @@ const DashboardInsights: FC = () => {
       category: "Credit",
       date: "Dec 14, 2023",
       amount: 129.99,
-      time: "02:30 PM"
+      time: "02:30 PM",
     },
     {
       id: 3,
@@ -94,7 +99,7 @@ const DashboardInsights: FC = () => {
       category: "Debit",
       date: "Dec 12, 2023",
       amount: -17.99,
-      time: "11:20 AM"
+      time: "11:20 AM",
     },
     {
       id: 4,
@@ -102,7 +107,7 @@ const DashboardInsights: FC = () => {
       category: "Debit",
       date: "Dec 10, 2023",
       amount: -45.23,
-      time: "04:15 PM"
+      time: "04:15 PM",
     },
     {
       id: 5,
@@ -110,7 +115,7 @@ const DashboardInsights: FC = () => {
       category: "Credit",
       date: "Dec 8, 2023",
       amount: 2865.33,
-      time: "08:00 AM"
+      time: "08:00 AM",
     },
   ];
 
@@ -130,29 +135,50 @@ const DashboardInsights: FC = () => {
 
   // Add chart configurations
   const spendingChartConfig = {
-    spending: { 
+    spending: {
       color: "#8B5CF6",
-      label: "Monthly Spending" 
-    }
+      label: "Monthly Spending",
+    },
   };
 
   const incomeChartConfig = {
     income: {
       color: "#10B981",
-      label: "Monthly Income"
-    }
+      label: "Monthly Income",
+    },
   };
 
   const trendsChartConfig = {
     income: {
       color: "#10B981",
-      label: "Income"
+      label: "Income",
     },
     spending: {
       color: "#EF4444",
-      label: "Spending"
-    }
+      label: "Spending",
+    },
   };
+
+  if (isLoadingUser) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full min-h-96 py-20">
+          <Loader className="animate-spin h-10 w-10 text-gray-500" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user?.isconnected) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full min-h-96 py-20">
+          <p className="text-gray-500">Please connect your account to view insights.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
 
   return (
     <DashboardLayout>
@@ -160,15 +186,19 @@ const DashboardInsights: FC = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Financial Insights</h1>
-            <p className="text-gray-600">Detailed analysis of your spending habits and financial patterns</p>
+            <h1 className="text-2xl md:text-3xl font-bold">
+              Financial Insights
+            </h1>
+            <p className="text-gray-600">
+              Detailed analysis of your spending habits and financial patterns
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" className="flex items-center gap-2">
               <Filter size={16} />
               <span>Filter</span>
             </Button>
-            <Button 
+            <Button
               onClick={() => setIsReportModalOpen(true)}
               className="bg-finance-gradient text-white hover:bg-finance-blue/90"
             >
@@ -200,25 +230,27 @@ const DashboardInsights: FC = () => {
               <Card className="lg:col-span-2">
                 <CardHeader>
                   <CardTitle>Monthly Spending</CardTitle>
-                  <CardDescription>Your spending pattern over the last 12 months</CardDescription>
+                  <CardDescription>
+                    Your spending pattern over the last 12 months
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="h-full">
                   <ChartContainer config={spendingChartConfig}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={monthlySpendingData}>
-                        <XAxis 
-                          dataKey="month" 
+                        <XAxis
+                          dataKey="month"
                           axisLine={false}
                           tickLine={false}
                           tickMargin={10}
                         />
-                        <YAxis 
+                        <YAxis
                           axisLine={false}
                           tickLine={false}
                           tickMargin={10}
                           tickFormatter={(value) => `$${value}`}
                         />
-                        <ChartTooltip 
+                        <ChartTooltip
                           content={({ active, payload }) => {
                             if (active && payload && payload.length) {
                               return (
@@ -247,12 +279,14 @@ const DashboardInsights: FC = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Recent Transactions</CardTitle>
-                  <CardDescription>Your latest spending activities</CardDescription>
+                  <CardDescription>
+                    Your latest spending activities
+                  </CardDescription>
                 </div>
-                <Button 
-                  onClick={() => setIsTransactionsModalOpen(true)} 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  onClick={() => setIsTransactionsModalOpen(true)}
+                  variant="ghost"
+                  size="sm"
                   className="text-finance-blue hover:text-white"
                 >
                   View All
@@ -273,15 +307,19 @@ const DashboardInsights: FC = () => {
                   <TableBody>
                     {recentTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
-                        <TableCell className="font-medium">{transaction.merchant}</TableCell>
+                        <TableCell className="font-medium">
+                          {transaction.merchant}
+                        </TableCell>
                         <TableCell>{transaction.category}</TableCell>
                         <TableCell>{transaction.date}</TableCell>
                         <TableCell>{transaction.time}</TableCell>
-                        <TableCell className={`text-right font-medium ${
-                          transaction.amount > 0 ? "text-finance-success" : ""
-                        }`}>
-                          {transaction.amount > 0 ? "+" : ""}
-                          ${Math.abs(transaction.amount).toFixed(2)}
+                        <TableCell
+                          className={`text-right font-medium ${
+                            transaction.amount > 0 ? "text-finance-success" : ""
+                          }`}
+                        >
+                          {transaction.amount > 0 ? "+" : ""}$
+                          {Math.abs(transaction.amount).toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -297,7 +335,9 @@ const DashboardInsights: FC = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Income Sources</CardTitle>
-                  <CardDescription>Breakdown of your income streams</CardDescription>
+                  <CardDescription>
+                    Breakdown of your income streams
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -347,7 +387,9 @@ const DashboardInsights: FC = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Financial Trends Analysis</CardTitle>
-                <CardDescription>Compare income vs. spending over time</CardDescription>
+                <CardDescription>
+                  Compare income vs. spending over time
+                </CardDescription>
               </CardHeader>
               <CardContent className="h-full">
                 <ChartContainer config={trendsChartConfig}>
@@ -371,14 +413,22 @@ const DashboardInsights: FC = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Spending Forecast</CardTitle>
-                  <CardDescription>AI-powered spending predictions</CardDescription>
+                  <CardDescription>
+                    AI-powered spending predictions
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium mb-2">Next Month's Estimated Spending</h4>
-                      <p className="text-2xl font-bold text-finance-blue">$1,750</p>
-                      <p className="text-sm text-gray-500">Based on historical patterns</p>
+                      <h4 className="font-medium mb-2">
+                        Next Month's Estimated Spending
+                      </h4>
+                      <p className="text-2xl font-bold text-finance-blue">
+                        $1,750
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Based on historical patterns
+                      </p>
                     </div>
                     {/* Add more prediction insights */}
                   </div>
@@ -393,9 +443,15 @@ const DashboardInsights: FC = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="p-4 bg-gray-50 rounded-lg">
-                      <h4 className="font-medium mb-2">Potential Monthly Savings</h4>
-                      <p className="text-2xl font-bold text-finance-success">$320</p>
-                      <p className="text-sm text-gray-500">Based on spending optimization</p>
+                      <h4 className="font-medium mb-2">
+                        Potential Monthly Savings
+                      </h4>
+                      <p className="text-2xl font-bold text-finance-success">
+                        $320
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Based on spending optimization
+                      </p>
                     </div>
                   </div>
                 </CardContent>

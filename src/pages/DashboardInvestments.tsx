@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
+  Loader,
   PlusCircle,
   AlertTriangle,
   Bot,
@@ -37,8 +38,10 @@ import PortfolioSummaryCard from "@/components/investments/PortfolioSummaryCard"
 import PortfolioHoldingsTable from "@/components/investments/PortfolioHoldingsTable";
 import InvestmentRecommendations from "@/components/investments/InvestmentRecommendations";
 import PerformanceChart from "@/components/investments/PerformanceChart";
+import { useAuth } from "@/hooks/use-auth";
 
 const DashboardInvestments: FC = () => {
+  const { user, isLoadingUser } = useAuth();
   const [selectedTimeRange, setSelectedTimeRange] = useState("1Y");
   const [showModal, setShowModal] = useState(false);
   const [currentStep, setCurrentStep] = useState<'summary' | 'aiChoice' | 'disclaimer' | 'amount'>('summary');
@@ -313,6 +316,27 @@ const DashboardInvestments: FC = () => {
 
   // Time range options for performance chart
   const timeRangeOptions = ["1M", "3M", "6M", "1Y", "5Y", "All"];
+
+    if (isLoadingUser) {
+      return (
+        <DashboardLayout>
+          <div className="flex items-center justify-center h-full min-h-96 py-20">
+            <Loader className="animate-spin h-10 w-10 text-gray-500" />
+          </div>
+        </DashboardLayout>
+      );
+    }
+  
+    if (!user?.isconnected) {
+      return (
+        <DashboardLayout>
+          <div className="flex items-center justify-center h-full min-h-96 py-20">
+            <p className="text-gray-500">Please connect your account to view insights.</p>
+          </div>
+        </DashboardLayout>
+      );
+    }
+  
 
   return (
     <DashboardLayout>
