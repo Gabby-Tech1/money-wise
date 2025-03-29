@@ -3,8 +3,27 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
   PlusCircle,
-  Shuffle,
+  AlertTriangle,
+  Bot,
 } from "lucide-react";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { Input } from "@/components/ui/input";
 
 import {
   Tabs,
@@ -21,6 +40,156 @@ import PerformanceChart from "@/components/investments/PerformanceChart";
 
 const DashboardInvestments: FC = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState("1Y");
+  const [showModal, setShowModal] = useState(false);
+  const [currentStep, setCurrentStep] = useState<'summary' | 'aiChoice' | 'disclaimer' | 'amount'>('summary');
+  const [investmentAmount, setInvestmentAmount] = useState('');
+
+  const handleAddInvestment = () => {
+    setShowModal(true);
+    setCurrentStep('summary');
+  };
+
+  const handleContinueToAI = () => {
+    setCurrentStep('aiChoice');
+  };
+
+  const handleAIChoice = (useAI: boolean) => {
+    if (useAI) {
+      setCurrentStep('disclaimer');
+    } else {
+      setShowModal(false);
+      // Reset the flow
+      setTimeout(() => setCurrentStep('summary'), 300);
+    }
+  };
+
+  const handleDisclaimerAgree = () => {
+    setCurrentStep('amount');
+  };
+
+  const handleInvestmentSubmit = () => {
+    // Handle the investment submission here
+    console.log('Investment amount:', investmentAmount);
+    setShowModal(false);
+    // Reset the flow
+    setTimeout(() => {
+      setCurrentStep('summary');
+      setInvestmentAmount('');
+    }, 300);
+  };
+
+  const renderModalContent = () => {
+    switch (currentStep) {
+      case 'summary':
+        return (
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold mb-4">Welcome to Smart Investments</DialogTitle>
+              <DialogDescription className="space-y-4">
+                <div className="grid gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Portfolio Management</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc pl-4 space-y-2">
+                        <li>Track and manage your investments in real-time</li>
+                        <li>View detailed performance metrics and analytics</li>
+                        <li>Automatic portfolio rebalancing suggestions</li>
+                        <li>Customizable alerts and notifications</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">AI-Powered Features</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="list-disc pl-4 space-y-2">
+                        <li>Personalized investment recommendations</li>
+                        <li>Risk analysis and portfolio optimization</li>
+                        <li>Market trend predictions and insights</li>
+                        <li>Smart diversification strategies</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-6">
+              <Button onClick={handleContinueToAI} className="w-full sm:w-auto">
+                Get Started
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        );
+
+      case 'aiChoice':
+        return (
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Choose Your Investment Approach</DialogTitle>
+              <DialogDescription>
+                Would you like our AI to help manage your investments?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-4">
+              <Button onClick={() => handleAIChoice(true)}>
+                <Bot className="mr-2 h-4 w-4" />
+                Yes, use AI
+              </Button>
+              <Button variant="outline" onClick={() => handleAIChoice(false)}>
+                No, I'll manage
+              </Button>
+            </div>
+          </DialogContent>
+        );
+
+      case 'disclaimer':
+        return (
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <AlertTriangle className="mr-2 h-5 w-5 text-yellow-500" />
+                Important Disclaimer
+              </DialogTitle>
+              <DialogDescription>
+                AI-powered investments carry risks. Past performance doesn't guarantee future results.
+                By proceeding, you acknowledge that you understand the risks involved.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button onClick={handleDisclaimerAgree}>I Agree</Button>
+            </DialogFooter>
+          </DialogContent>
+        );
+
+      case 'amount':
+        return (
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Enter Investment Amount</DialogTitle>
+              <DialogDescription>
+                How much would you like to invest?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                placeholder="Enter amount"
+                value={investmentAmount}
+                onChange={(e) => setInvestmentAmount(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleInvestmentSubmit}>Proceed</Button>
+            </DialogFooter>
+          </DialogContent>
+        );
+    }
+  };
 
   // Sample data
   const portfolioSummary = {
@@ -155,16 +324,20 @@ const DashboardInvestments: FC = () => {
             <p className="text-gray-600">Manage your portfolio and discover new opportunities</p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Shuffle size={16} />
-              <span>Rebalance</span>
-            </Button>
-            <Button className="bg-finance-gradient text-white hover:bg-finance-blue/90">
+            <Button 
+              className="bg-finance-gradient text-white hover:bg-finance-blue/90"
+              onClick={handleAddInvestment}
+            >
               <PlusCircle size={16} className="mr-2" />
               Add Investment
             </Button>
           </div>
         </div>
+
+        {/* Modal */}
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          {renderModalContent()}
+        </Dialog>
 
         {/* Portfolio Summary */}
         <PortfolioSummaryCard portfolioSummary={portfolioSummary} />

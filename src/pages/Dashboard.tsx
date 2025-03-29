@@ -55,7 +55,6 @@ const Dashboard: FC = () => {
 
         const data = await response.json();
         setUserDetails(data);
-        console.log('User details:', data);
       } catch (error) {
         console.error('Error fetching user details:', error);
         toast.error('Failed to load user details');
