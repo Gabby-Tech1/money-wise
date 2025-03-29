@@ -2,7 +2,9 @@ import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Bot } from "lucide-react";
+import { Send, Bot, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 interface ChatMessage {
   type: 'user' | 'bot';
@@ -11,6 +13,7 @@ interface ChatMessage {
 }
 
 const FinancialAdvisorBot: FC = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       type: 'bot',
@@ -19,26 +22,58 @@ const FinancialAdvisorBot: FC = () => {
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || !user) return;
 
-    // Add user message
     const userMessage: ChatMessage = {
       type: 'user',
       content: inputMessage,
       timestamp: new Date()
     };
 
-    // Simple bot response (you would replace this with actual AI/logic)
-    const botMessage: ChatMessage = {
-      type: 'bot',
-      content: 'Thank you for your message. This is a demo response. In the real application, I would analyze your financial data and provide personalized advice.',
-      timestamp: new Date()
-    };
-
-    setMessages([...messages, userMessage, botMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
+    setIsLoading(true);
+
+    try {
+      // Add message as query parameter and in body
+      const url = new URL(`https://cashflow-backend-yko9.onrender.com/api/auth/${user.id}/chat`);
+      url.searchParams.append('message', inputMessage);
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          message: inputMessage,
+          userId: user.id
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data.detail?.[0]?.msg || data.message || 'Failed to get response';
+        throw new Error(errorMessage);
+      }
+
+      const botMessage: ChatMessage = {
+        type: 'bot',
+        content: data.response || 'I apologize, but I cannot process your request at the moment.',
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast.error(error instanceof Error ? error.message : 'Unable to process your request');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,9 +120,10 @@ const FinancialAdvisorBot: FC = () => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            disabled={isLoading}
           />
-          <Button onClick={handleSendMessage}>
-            <Send size={18} />
+          <Button onClick={handleSendMessage} disabled={isLoading}>
+            {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </Button>
         </div>
       </div>
