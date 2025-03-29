@@ -164,14 +164,15 @@ const DashboardLayout: FC<DashboardLayoutProps> = ({ children }) => {
           </nav>
 
           <div className="mt-auto pt-4 border-t">
-            <Button
+            <Link to="/logout" onClick={handleLogout} className="flex items-center cursor-pointer text-finance-danger">
+              <Button
                 variant="ghost"
-                className="w-full justify-start text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900"
-                onClick={handleLogout}
-              >
+                className="w-full justify-start text-gray-700 font-medium hover:bg-gray-100 hover:text-gray-900">
                 <LogOut size={20} className="mr-3" />
                 Logout
               </Button>
+            </Link>
+            
           </div>
         </div>
       </div>
