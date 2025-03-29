@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,53 +24,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-
-interface UserDetails {
-  first_name: string;
-  email: string;
-  id: string;
-  isconnected?: boolean;
-}
+import { useAuth } from "@/hooks/use-auth";
 
 const Dashboard: FC = () => {
-  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
-
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("No token found");
-        }
-
-        const response = await fetch(
-          "https://cashflow-backend-yko9.onrender.com/api/auth/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user details");
-        }
-
-        const data = await response.json();
-        setUserDetails(data);
-        console.log("User details:", data);
-      } catch (error) {
-        console.error("Error fetching user details:", error);
-        toast.error("Failed to load user details");
-      } finally {
-        setIsLoadingUser(false);
-      }
-    };
-
-    fetchUserDetails();
-  }, []);
+  const { user: userDetails, isLoadingUser, retry } = useAuth();
 
   // Modal states
   const [showAccountModal, setShowAccountModal] = useState(false);
@@ -141,13 +98,8 @@ const Dashboard: FC = () => {
       name: "",
       phoneNumber: "",
     });
-    // development mode only - let's reset the userdetails with isconnected to true
-    setUserDetails((prev) => {
-      if (prev) {
-        return { ...prev, isconnected: true };
-      }
-      return null;
-    });
+
+    retry();
   };
 
   // Add function to handle OTP input to allow only numbers

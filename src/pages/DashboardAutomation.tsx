@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Loader, Plus } from "lucide-react";
 
 import {
   Tabs,
@@ -14,6 +14,7 @@ import {
 import SummaryCard from "@/components/automation/SummaryCard";
 import RulesTab from "@/components/automation/RulesTab";
 import AISuggestionsTab from "@/components/automation/AISuggestionsTab";
+import { useAuth } from "@/hooks/use-auth";
 
 // Define the Rule type to match what RulesTab expects
 interface Rule {
@@ -31,6 +32,7 @@ interface Rule {
 }
 
 const DashboardAutomation: FC = () => {
+  const { user, isLoadingUser } = useAuth();
   // State for automation rules
   const [savingRules] = useState<Rule[]>([
     {
@@ -131,6 +133,27 @@ const DashboardAutomation: FC = () => {
       nextRun: "Jan 28, 2024",
     },
   ]);
+
+    if (isLoadingUser) {
+      return (
+        <DashboardLayout>
+          <div className="flex items-center justify-center h-full min-h-96 py-20">
+            <Loader className="animate-spin h-10 w-10 text-gray-500" />
+          </div>
+        </DashboardLayout>
+      );
+    }
+  
+    if (!user?.isconnected) {
+      return (
+        <DashboardLayout>
+          <div className="flex items-center justify-center h-full min-h-96 py-20">
+            <p className="text-gray-500">Please connect your account to view insights.</p>
+          </div>
+        </DashboardLayout>
+      );
+    }
+  
 
   return (
     <DashboardLayout>
