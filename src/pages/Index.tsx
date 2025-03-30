@@ -17,10 +17,12 @@ import {
   Shield,
 } from "lucide-react";
 import Mobile from '@/assets/mobile.png'
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const Index: FC = () => {
   return (
     <MainLayout>
+      <ScrollToTop />
       {/* Hero Section */}
       <HeroSection 
         title="AI-Powered Financial Intelligence"

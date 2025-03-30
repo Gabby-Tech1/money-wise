@@ -39,6 +39,7 @@ import PortfolioHoldingsTable from "@/components/investments/PortfolioHoldingsTa
 import InvestmentRecommendations from "@/components/investments/InvestmentRecommendations";
 import PerformanceChart from "@/components/investments/PerformanceChart";
 import { useAuth } from "@/hooks/use-auth";
+import { PerformanceData, Recommendation } from "@/types/investments";
 
 const DashboardInvestments: FC = () => {
   const { user, isLoadingUser } = useAuth();
@@ -207,12 +208,12 @@ const DashboardInvestments: FC = () => {
     ],
   };
 
-  const investmentRecommendations = [
+  const investmentRecommendations: Recommendation[] = [
     {
       id: 1,
       name: "Technology ETF",
       ticker: "TECH",
-      type: "ETF",
+      type: "HIHS",
       riskLevel: "Medium",
       expectedReturn: "8-12%",
       description: "A diversified fund of technology companies with strong growth potential.",
@@ -222,7 +223,7 @@ const DashboardInvestments: FC = () => {
       id: 2,
       name: "Sustainable Energy Fund",
       ticker: "ENRG",
-      type: "Mutual Fund",
+      type: "HILS",
       riskLevel: "Medium-High",
       expectedReturn: "10-15%",
       description: "Focused on renewable energy companies and sustainable technologies.",
@@ -232,7 +233,7 @@ const DashboardInvestments: FC = () => {
       id: 3,
       name: "Dividend Aristocrats",
       ticker: "DIVD",
-      type: "ETF",
+      type: "LILS",
       riskLevel: "Low",
       expectedReturn: "4-7%",
       description: "Companies with a history of increasing dividends for 25+ consecutive years.",
@@ -298,21 +299,29 @@ const DashboardInvestments: FC = () => {
     },
   ];
 
-  // Sample performance data for the chart
-  const performanceData = [
-    { month: "Jan", value: 130000 },
-    { month: "Feb", value: 128500 },
-    { month: "Mar", value: 134000 },
-    { month: "Apr", value: 136500 },
-    { month: "May", value: 132000 },
-    { month: "Jun", value: 137500 },
-    { month: "Jul", value: 140000 },
-    { month: "Aug", value: 141500 },
-    { month: "Sep", value: 139000 },
-    { month: "Oct", value: 143000 },
-    { month: "Nov", value: 146000 },
-    { month: "Dec", value: 145650.78 },
-  ];
+  // Generate 5 years of monthly performance data
+  const generatePerformanceData = (): PerformanceData[] => {
+    const data: PerformanceData[] = [];
+    const startValue = 100000;
+    const startDate = new Date('2019-01-01');
+    
+    for (let i = 0; i < 60; i++) { // 60 months = 5 years
+      const date = new Date(startDate);
+      date.setMonth(startDate.getMonth() + i);
+      
+      // Add some randomization to make the data look realistic
+      const randomGrowth = 1 + (Math.random() * 0.06 - 0.02); // -2% to +4% monthly change
+      const value = i === 0 ? startValue : data[i-1].value * randomGrowth;
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        value: Math.round(value * 100) / 100
+      });
+    }
+    return data;
+  };
+
+  const performanceData = generatePerformanceData();
 
   // Time range options for performance chart
   const timeRangeOptions = ["1M", "3M", "6M", "1Y", "5Y", "All"];

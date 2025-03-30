@@ -9,10 +9,12 @@ import AITechnologySection from "@/components/features/AITechnologySection";
 import SecuritySection from "@/components/features/SecuritySection";
 import MobileAppSection from "@/components/features/MobileAppSection";
 import CTASection from "@/components/features/CTASection";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const Features: FC = () => {
   return (
     <MainLayout>
+      <ScrollToTop />
       <div className="max-w-7xl mx-auto px-4">
         {/* Hero Section */}
         <FeaturesHero />

@@ -39,7 +39,7 @@ const FinancialAdvisorBot: FC = () => {
 
     try {
       // Add message as query parameter and in body
-      const url = new URL(`https://cashflow-backend-yko9.onrender.com/api/auth/${user.id}/chat`);
+      const url = new URL(`https://cashflow-backend-yko9.onrender.com/api/chat/${user.id}/chat`);
       url.searchParams.append('message', inputMessage);
 
       const response = await fetch(url.toString(), {
@@ -79,7 +79,7 @@ const FinancialAdvisorBot: FC = () => {
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="px-4 py-3 border-b">
-        <h2 className="text-lg font-semibold">Financial Advisor</h2>
+        <h2 className="text-lg font-semibold">Financial Chatbot</h2>
         <p className="text-sm text-gray-500">AI-powered financial guidance</p>
       </div>
 
@@ -100,7 +100,7 @@ const FinancialAdvisorBot: FC = () => {
                 {message.type === 'bot' && (
                   <div className="flex items-center gap-2 mb-1">
                     <Bot size={16} />
-                    <span className="text-xs font-medium">Financial Advisor</span>
+                    <span className="text-xs font-medium">Financial Chatbot</span>
                   </div>
                 )}
                 <p className="text-sm">{message.content}</p>

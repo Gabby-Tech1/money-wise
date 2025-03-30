@@ -4,10 +4,12 @@ import MainLayout from "@/components/MainLayout";
 import ContactForm from "@/components/ContactForm";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Phone, Mail, ChevronRight } from "lucide-react";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const Contact: FC = () => {
   return (
     <MainLayout>
+      <ScrollToTop />
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-finance-blue to-finance-purple bg-clip-text text-transparent">

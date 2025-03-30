@@ -34,27 +34,27 @@ const DashboardSettings: FC = () => {
         </div>
 
         {/* Settings Tabs */}
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-4">
+        <Tabs defaultValue="profile" className="space-y-6 max-md:h-full ">
+          <TabsList className="grid w-full h-full grid-cols-2 md:grid-cols-5 mb-4">
             <TabsTrigger value="profile" className="flex gap-2 items-center">
               <UserCircle className="h-4 w-4" />
-              <span className="hidden md:inline">Profile</span>
+              <span className="inline">Profile</span>
             </TabsTrigger>
             <TabsTrigger value="accounts" className="flex gap-2 items-center">
               <CreditCard className="h-4 w-4" />
-              <span className="hidden md:inline">Accounts</span>
+              <span className="inline">Accounts</span>
             </TabsTrigger>
             <TabsTrigger value="security" className="flex gap-2 items-center">
               <Lock className="h-4 w-4" />
-              <span className="hidden md:inline">Security</span>
+              <span className="inline">Security</span>
             </TabsTrigger>
             <TabsTrigger value="notifications" className="flex gap-2 items-center">
               <BellRing className="h-4 w-4" />
-              <span className="hidden md:inline">Notifications</span>
+              <span className="inline">Notifications</span>
             </TabsTrigger>
             <TabsTrigger value="preferences" className="flex gap-2 items-center">
               <Settings className="h-4 w-4" />
-              <span className="hidden md:inline">Preferences</span>
+              <span className="inline">Preferences</span>
             </TabsTrigger>
           </TabsList>
 

@@ -13,6 +13,7 @@ import {
   ChevronRight,
   CheckCircle,
 } from "lucide-react";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const Help: FC = () => {
   // FAQ data for the FaqAccordion component
@@ -41,6 +42,7 @@ const Help: FC = () => {
 
   return (
     <MainLayout>
+      <ScrollToTop />
       <div className="max-w-7xl mx-auto px-4 py-16 md:py-24">
         {/* Hero Section */}
         <div className="text-center mb-16">
