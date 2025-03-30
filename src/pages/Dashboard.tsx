@@ -396,6 +396,15 @@ const Dashboard: FC = () => {
             <p className="text-gray-600">
               Please link a wallet to view analytics.
             </p>
+            <div className="max-md:block">
+              <Button
+                className="bg-finance-gradient hover:bg-finance-blue"
+                onClick={() => setShowAccountModal(true)}
+              >
+                <PiggyBank size={18} className="mr-2" />
+                Add Account
+              </Button>
+          </div>
           </div>
         )}
         {/* Account Selection Modal */}
